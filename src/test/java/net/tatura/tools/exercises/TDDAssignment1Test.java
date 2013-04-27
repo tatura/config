@@ -1,8 +1,6 @@
 package net.tatura.tools.exercises;
 
 import static org.junit.Assert.*;
-import net.tatura.tools.exercises.PasswordAnalyzer;
-import net.tatura.tools.exercises.TDDAssignment1;
 
 import org.junit.Test;
 
@@ -31,6 +29,7 @@ public class TDDAssignment1Test {
 
         assertEquals("Entfernen von vorhandenen Zeichen", "mein ", TDDAssignment1.strip("mein WE", "WE"));
         assertEquals("Entfernen von vorhandenen Zeichen", "-", TDDAssignment1.strip("Hallo-ollaH", "Halo"));
+
     }
 
     /**

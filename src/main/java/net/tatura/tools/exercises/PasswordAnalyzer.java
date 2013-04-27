@@ -44,7 +44,7 @@ public final class PasswordAnalyzer {
                 return true;
             }
         }
-        log.debug("failed hasLowerCase");
+        log.info("failed hasLowerCase");
         return false;
     }
 
@@ -60,7 +60,7 @@ public final class PasswordAnalyzer {
                 return true;
             }
         }
-        log.debug("failed hasUpperCase");
+        log.info("failed hasUpperCase");
         return false;
     }
 
@@ -77,7 +77,7 @@ public final class PasswordAnalyzer {
                 return true;
             }
         }
-        log.debug("failed hasDigit");
+        log.info("failed hasDigit");
         return false;
     }
 
@@ -115,7 +115,7 @@ public final class PasswordAnalyzer {
                 return true;
             }
         }
-        log.debug("failed checkDifferentCharacters");
+        log.info("failed checkDifferentCharacters");
         return false;
     }
 }
