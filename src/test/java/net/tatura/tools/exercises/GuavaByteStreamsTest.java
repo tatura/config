@@ -5,79 +5,91 @@ import static org.mockito.Mockito.*;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
 import com.google.common.io.ByteStreams;
+import com.google.common.io.Closeables;
 import com.google.common.io.OutputSupplier;
 
-import org.junit.Assert;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
+ * Klasse zum Testen von Guava Kopier-Funktionalität.
  * @author Benjamin Keeser
  */
 public class GuavaByteStreamsTest {
 
     private static Logger log = LoggerFactory.getLogger(GuavaByteStreamsTest.class);
+    private boolean threw = true;
 
+    /**
+     * Methode zum Testen der Kopierfunktion.
+     */
     @Test
     public void testCopy() {
 
         // Given
-        File file = null;
-        byte[] fileData = new byte[] { 12, 44, 16, 18, 20, 22, 24, 26, 28 };
+        byte[] fileData = new byte[] {12, 14, 16, 18, 20, 22, 24, 26, 28};
 
         InputStream in = getInputStream(fileData);
         OutputSupplier<OutputStream> ous = outputSupplier();
-        OutputSupplier<OutputStream> ousWithoutGeneric = outputSupplierWithoutGeneric();
+        OutputSupplier ousWithoutGenerics = outputSupplierWithoutGenerics();
 
         try {
-            file = File.createTempFile("testFile", ".tmp");
-
-            ByteStreams.copy(in, ous);
-            Assert.assertArrayEquals("Wrong data", new byte[] { 16, 18, 20 }, ((ByteArrayOutputStream)ous.getOutput()).toByteArray());
 
             // When
-//            when(in.read(fileData)).thenReturn(-1);
-            long byteLength = ByteStreams.copy(in, ous);
+            int byteLength = (int)ByteStreams.copy(in, ous);
+            int byteLengthWitoutGeneric = (int)ByteStreams.copy(in, ousWithoutGenerics);
 
             //Then
-            assertEquals("Expected byte length: 8 ", fileData.length, byteLength);
+            assertEquals("Expected byte length", fileData.length, byteLength);
+            assertNotEquals("Expected false byte length", fileData.length, byteLengthWitoutGeneric);
 
-
-            ByteStreams.copy(in, ousWithoutGeneric);
-            Assert.assertArrayEquals("Wrong data", new byte[] { 16, 18, 20 }, ((ByteArrayOutputStream)ousWithoutGeneric.getOutput()).toByteArray());
-
-            long byteLengthWitoutGeneric = ByteStreams.copy(in, ousWithoutGeneric);
-
-            //Then - No Generics
-            assertEquals("Expected byte length: 8 ", fileData.length, byteLengthWitoutGeneric);
-
+            threw = false;
         }
         catch (IOException exception) {
             log.error("error: " + exception.getLocalizedMessage());
         }
+
         finally {
-            file.deleteOnExit();
+
+//            Closeables mock = mock(Closeables.class);
+//            doThrow(new IOException()).when(...);
+
+            try {
+                Closeables.close(in, threw);
+            }
+            catch (IOException exception) {
+                log.error("finally error: " + exception.getLocalizedMessage());
+            }
         }
+
     }
 
-    public OutputSupplier outputSupplierWithoutGeneric() {
+    /**
+     * Methode zum Erzeugen eines OutputSupplier ohne Generics (Guava).
+     * @return OutpuSupplier
+     */
+    public OutputSupplier outputSupplierWithoutGenerics() {
 
         final ByteArrayOutputStream out = new ByteArrayOutputStream();
 
         return new OutputSupplier() {
+            @Override
             public OutputStream getOutput() throws IOException {
                 return out;
             }
         };
     }
 
+    /**
+     * Methode zum Erzeugen eines OutputSupplier (Guava).
+     * @return OutpuSupplier
+     */
     OutputSupplier<OutputStream> outputSupplier() {
 
         return new OutputSupplier<OutputStream>() {
@@ -89,18 +101,23 @@ public class GuavaByteStreamsTest {
         };
     }
 
+    /**
+     * Methode zur Generierung eines Input-Streams (Guave).
+     * @param data bytedata
+     * @return IputStream stream
+     */
     public InputStream getInputStream(final byte[] data) {
 
-        ByteArrayInputStream in = mock(ByteArrayInputStream.class);
-        try {
-            in.read(data);
-        }
-        catch (IOException exception) {
-            log.error("error: " + exception);
-        }
+        ByteArrayInputStream in = new ByteArrayInputStream(data);
         return in;
+
+//        ByteArrayInputStream in = mock(ByteArrayInputStream.class);
     }
 
+    /**
+     * Methode zum Erzeugen eines Outputstreams.
+     * @return OutputStream
+     */
     public OutputStream getOutputStream() {
         ByteArrayOutputStream out = mock(ByteArrayOutputStream.class);
         return out;
